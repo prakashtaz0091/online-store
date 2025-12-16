@@ -18,7 +18,7 @@
     }
 
     .products-grid {
-        padding: 50px 0;
+        padding: 0;
     }
 
     .product-card {
@@ -86,52 +86,109 @@
     <p>Fresh, healthy, and organic products for you</p>
 </section>
 
-<!-- PRODUCTS GRID -->
-<section class="container products-grid">
-    <div class="row g-4">
+<section class="d-flex gap-5">
 
-        {% for product in products %}
-        <div class="col-lg-3 col-md-4 col-sm-6">
-            <div class="card product-card">
-                <img src="{{ product.image.url }}" alt="{{ product.name }}">
-                <div class="product-card-body">
-                    <h5>{{ product.name }}</h5>
-                    <p>${{ product.price }}</p>
-                    <a href="" class="btn-add">View</a>
+    <div style="max-width: 20%;">
+        <h2> Filters </h2>
+        <form id="filter_form" action="" method="get" class="d-flex flex-column gap-2">
+            {{filter_form.name.label}}
+            {{filter_form.name}}
+            <div class="d-flex gap-2 mb-2">
+                <div>
+                    {{filter_form.min_price.label}}
+                    {{filter_form.min_price}}
+                </div>
+                <div>
+                    {{filter_form.max_price.label}}
+                    {{filter_form.max_price}}
                 </div>
             </div>
-        </div>
-        {% empty %}
-        <p class="text-center">No products available.</p>
-        {% endfor %}
+
+            {{filter_form.categories.label}}
+            {{filter_form.categories}}
+            <hr>
+            {{filter_form.sorting_key.label}}
+            {{filter_form.sorting_key}}
+
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-success mt-2 w-100" type="submit">Filter</button>
+                <button class="btn btn-primary mt-2 w-100" onclick="resetForm(event)">Reset</button>
+            </div>
+        </form>
 
     </div>
 
-    <!-- OPTIONAL PAGINATION -->
-    <nav aria-label="Page navigation example">
-        <ul class="pagination">
-            {% if products.has_previous %}
-            <li class="page-item"><a class="page-link" href="?page={{ products.previous_page_number }}">Previous</a>
-            </li>
-            {% else %}
-            <li class="page-item disabled"><span class="page-link">Previous</span></li>
-            {% endif %}
+    <!-- PRODUCTS GRID -->
+    <div class="container products-grid">
+        <h2> Products </h2>
 
-            {% for num in products.paginator.page_range %}
-            {% if products.number == num %}
-            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-            {% else %}
-            <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
-            {% endif %}
+        <div class="row g-4">
+
+            {% for product in products %}
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="card product-card">
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                    <div class="product-card-body">
+                        <h5>{{ product.name }}</h5>
+                        <p>Rs. {{ product.price }}</p>
+                        <a href="" class="btn-add">View</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-center">No products available.</p>
             {% endfor %}
 
-            {% if products.has_next %}
-            <li class="page-item"><a class="page-link" href="?page={{ products.next_page_number }}">Next</a></li>
-            {% else %}
-            <li class="page-item disabled"><span class="page-link">Next</span></li>
-            {% endif %}
-        </ul>
-    </nav>
+        </div>
+
+        <!-- OPTIONAL PAGINATION -->
+        <nav aria-label="Page navigation example">
+            <ul class="pagination">
+                {% if products.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ products.previous_page_number }}">Previous</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                {% endif %}
+
+                {% for num in products.paginator.page_range %}
+                {% if products.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% else %}
+                <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                {% endif %}
+                {% endfor %}
+
+                {% if products.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ products.next_page_number }}">Next</a></li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">Next</span></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+
+
 </section>
+
+<script>
+    function resetForm(event) {
+        // prevent page reload
+        event.preventDefault();
+
+        // gather all the form input fields
+        const form_inputs = document.getElementById("filter_form").getElementsByTagName("input")
+
+        // for every field, set value attribute to null, of uncheck if it's checkbox
+        for (let index = 0; index < form_inputs.length; index++) {
+            const element = form_inputs[index];
+            element.value = null;
+            if (element.checked) {
+                element.checked = false;
+            }
+        }
+    }
+</script>
 
 {% endblock content %}
