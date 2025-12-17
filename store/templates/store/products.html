@@ -132,7 +132,7 @@
                     <div class="product-card-body">
                         <h5>{{ product.name }}</h5>
                         <p>Rs. {{ product.price }}</p>
-                        <a href="" class="btn-add">View</a>
+                        <a href="{% url 'store:product_detail_page' product.id %}" class="btn-add">View</a>
                     </div>
                 </div>
             </div>

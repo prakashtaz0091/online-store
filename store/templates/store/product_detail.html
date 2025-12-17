@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} — Organic Store{% endblock title %}
+
+{% block extra_head %}
+<style>
+    .product-detail {
+        padding: 60px 0;
+    }
+
+    .product-img {
+        width: 100%;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .product-info h1 {
+        font-family: 'Caveat', cursive !important;
+        font-size: 2.5rem;
+        color: var(--organic-dark);
+        margin-bottom: 15px;
+    }
+
+    .product-info p.price {
+        font-size: 1.5rem;
+        color: var(--organic-primary);
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+
+    .product-info p.description {
+        font-size: 1.1rem;
+        color: #3e6b3e;
+        margin-bottom: 25px;
+    }
+
+    .btn-add-cart {
+        background-color: var(--organic-primary);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 25px;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+
+    .btn-add-cart:hover {
+        background-color: var(--organic-dark);
+        color: #fff;
+    }
+
+    /* Related products */
+    .related-products h3 {
+        font-family: 'Caveat', cursive !important;
+        color: var(--organic-dark);
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .related-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        transition: transform 0.2s;
+        background: #ffffffd9;
+        text-align: center;
+    }
+
+    .related-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .related-card img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+    }
+
+    .related-card-body {
+        padding: 10px;
+    }
+
+    .related-card-body h6 {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: var(--organic-dark);
+    }
+
+    .related-card-body p {
+        color: #6a9c63;
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+
+    .btn-related {
+        background-color: var(--organic-primary);
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 15px;
+        font-size: 0.9rem;
+    }
+
+    .btn-related:hover {
+        background-color: var(--organic-dark);
+    }
+</style>
+{% endblock extra_head %}
+
+{% block content %}
+<section class="container product-detail">
+    <div class="row g-5">
+        <!-- PRODUCT IMAGE -->
+        <div class="col-md-6">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-img">
+        </div>
+
+        <!-- PRODUCT INFO -->
+        <div class="col-md-6 product-info">
+            <h1>{{ product.name|title }}</h1>
+            <p class="price"> Rs.{{ product.price }}</p>
+            <p class="description">{{ product.description }}</p>
+
+            <form method="POST" action="{% url 'store:add_to_cart' product.id %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="quantity" class="form-label">Quantity:</label>
+                    <input type="number" name="quantity" value="1" min="1" class="form-control"
+                        style="max-width:100px;">
+                </div>
+                <button type="submit" class="btn-add-cart">Add to Cart</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- RELATED PRODUCTS -->
+    {% if related_products %}
+    <section class="related-products mt-5">
+        <h3>You May Also Like</h3>
+        <div class="row g-4">
+            {% for item in related_products %}
+            <div class="col-md-3 col-sm-6">
+                <div class="card related-card">
+                    <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                    <div class="related-card-body">
+                        <h6>{{ item.name }}</h6>
+                        <p>${{ item.price }}</p>
+                        <a href="{% url 'product_detail' item.id %}" class="btn-related">View</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</section>
+{% endblock content %}

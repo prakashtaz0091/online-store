@@ -1,7 +1,10 @@
-from django.shortcuts import render
-from .models import Product
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Product, Cart, CartProduct
 from django.core.paginator import Paginator
 from .forms import ProductFilterForm
+from django.urls import reverse, reverse_lazy
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
 
 def home(request):
@@ -60,3 +63,36 @@ def products(request):
         "filter_form": filter_form,
     }
     return render(request, "store/products.html", context)
+
+
+def product_detail(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+
+    context = {"product": product}
+
+    return render(request, "store/product_detail.html", context)
+
+
+@login_required(login_url=reverse_lazy("accounts:login_page"))
+def add_to_cart(request, pk):
+    try:
+        product = get_object_or_404(Product, pk=pk)
+        logged_in_user = request.user
+        cart, created = Cart.objects.get_or_create(user=logged_in_user)
+
+        if CartProduct.objects.filter(product=product, cart=cart).exists():
+            messages.success(request, "Product already in your cart")
+            return redirect("store:product_detail_page", pk=pk)
+
+        quantity = int(request.POST.get("quantity"))
+        if quantity < 0:
+            messages.error(request, "Quantify cannot be zero")
+            return redirect("store:product_detail_page", pk=pk)
+
+        CartProduct.objects.create(product=product, cart=cart, quantity=quantity)
+        messages.success(request, "Product added to cart successfully")
+    except Exception as e:
+        print(e)
+        messages.error(request, "Adding product to cart failed")
+
+    return redirect("store:product_detail_page", pk=pk)
