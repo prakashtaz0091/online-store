@@ -75,6 +75,14 @@
             text-decoration: underline;
             color: #fff;
         }
+
+        .cart-button {
+            background-color: var(--organic-light);
+            font-size: 30px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            margin-right: 10px;
+        }
     </style>
 
     {% block extra_head %}{% endblock extra_head %}
@@ -130,6 +138,9 @@
 
 
                 {% if request.user.is_authenticated %}
+
+                <a class="cart-button" href="{% url 'store:cart_page' %}">🛒</a>
+
                 <a class="nav-link" href="{% url 'accounts:logout_page' %}">
                     Logout
                 </a>

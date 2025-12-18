@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}Your Cart — Organic Store{% endblock title %}
+
+{% block extra_head %}
+<style>
+    .cart-container {
+        padding: 60px 0;
+    }
+
+    .cart-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 15px;
+    }
+
+    .cart-table th {
+        text-align: left;
+        color: var(--organic-dark);
+        font-weight: 600;
+        padding-bottom: 10px;
+    }
+
+    .cart-table td {
+        vertical-align: middle;
+        background: #ffffffd9;
+        padding: 15px;
+        border-radius: 12px;
+    }
+
+    .cart-table img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .quantity-input {
+        width: 60px;
+        padding: 5px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        text-align: center;
+    }
+
+    .btn-remove {
+        background-color: #ff6b6b;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 12px;
+        transition: 0.2s;
+    }
+
+    .btn-remove:hover {
+        background-color: #e03f3f;
+    }
+
+    .cart-summary {
+        background: #f4f9f4;
+        padding: 25px;
+        border-radius: 12px;
+        margin-top: 20px;
+    }
+
+    .cart-summary h4 {
+        font-family: 'Caveat', cursive !important;
+        color: var(--organic-dark);
+        margin-bottom: 20px;
+    }
+
+    .btn-checkout {
+        background-color: var(--organic-primary);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 25px;
+        font-weight: 600;
+        transition: 0.2s;
+        width: 100%;
+    }
+
+    .btn-checkout:hover {
+        background-color: var(--organic-dark);
+        color: #fff;
+    }
+
+    @media (max-width: 768px) {
+        .cart-table img {
+            width: 60px;
+            height: 60px;
+        }
+
+        .quantity-input {
+            width: 50px;
+        }
+    }
+</style>
+{% endblock extra_head %}
+
+{% block content %}
+<section class="container cart-container">
+    <h2 class="mb-4" style="font-family: 'Caveat', cursive; color: var(--organic-dark);">Your Cart</h2>
+
+    {% if products %}
+    <table class="cart-table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Subtotal</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in products %}
+            <tr>
+                <td>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                        <span>{{ item.product.name }}</span>
+                    </div>
+                </td>
+                <td>${{ item.product.price }}</td>
+                <td>
+                    <form method="POST" action="{% url 'store:update_cart' item.id %}">
+                        {% csrf_token %}
+                        <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="quantity-input">
+                        <button type="submit" class="btn btn-sm btn-add">Update</button>
+                    </form>
+                </td>
+                <td>${{ item.get_total_price }}</td>
+                <td>
+                    <form method="POST" action="{% url 'store:remove_from_cart' item.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-remove">Remove</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- CART SUMMARY -->
+    <div class="cart-summary mt-4">
+        <h4>Cart Summary</h4>
+        <p>Total: <strong>${{ cart_total|floatformat:2 }}</strong></p>
+        <a href="" class="btn-checkout">Proceed to Checkout</a>
+    </div>
+
+    {% else %}
+    <p class="text-center">Your cart is empty. <a href="{% url 'store:products_page' %}"
+            style="color: var(--organic-primary);">Shop Now</a>
+    </p>
+    {% endif %}
+</section>
+{% endblock content %}
