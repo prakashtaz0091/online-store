@@ -85,6 +85,13 @@
         color: #fff;
     }
 
+    .order-status {
+        padding: 4px 6px;
+        border-radius: 6px;
+        background-color: rgb(0, 207, 0);
+        color: white;
+    }
+
     @media (max-width: 768px) {
         .cart-table img {
             width: 60px;
@@ -100,21 +107,34 @@
 
 {% block content %}
 <section class="container cart-container">
-    <h2 class="mb-4" style="font-family: 'Caveat', cursive; color: var(--organic-dark);">Your Cart</h2>
+    <h2 class="mb-4" style="font-family: 'Caveat', cursive; color: var(--organic-dark);">Your Orders</h2>
 
-    {% if products %}
-    <table class="cart-table">
+    {% if orders %}
+    {% for order in orders %}
+    <table class="cart-table mb-5 mt-2">
+        <div class="d-flex justify-content-between">
+            <div class="d-flex gap-3 ">
+                <h2> {{order.order_id}} </h2>
+                <p class="order-status"> {{order.status}}</p>
+            </div>
+            <form action="{% url 'store:cancel_order' order.id %}" method="post"
+                onsubmit="return confirm('Are you sure you want to cancel this order?')">
+
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-danger">Cancel order</button>
+            </form>
+        </div>
+        <hr>
         <thead>
             <tr>
                 <th>Product</th>
                 <th>Price</th>
                 <th>Quantity</th>
                 <th>Subtotal</th>
-                <th></th>
             </tr>
         </thead>
         <tbody>
-            {% for item in products %}
+            {% for item in order.items.all %}
             <tr>
                 <td>
                     <div style="display:flex; align-items:center; gap:10px;">
@@ -122,32 +142,24 @@
                         <span>{{ item.product.name }}</span>
                     </div>
                 </td>
-                <td>${{ item.product.price }}</td>
+                <td> Rs. {{ item.product.price }}</td>
                 <td>
-                    <form method="POST" action="{% url 'store:update_cart' item.id %}">
-                        {% csrf_token %}
-                        <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="quantity-input">
-                        <button type="submit" class="btn btn-sm btn-add">Update</button>
-                    </form>
+                    {{ item.quantity }}
                 </td>
                 <td>${{ item.get_total_price }}</td>
-                <td>
-                    <form method="POST" action="{% url 'store:remove_from_cart' item.id %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-remove">Remove</button>
-                    </form>
-                </td>
+
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    {% endfor %}
 
-    <!-- CART SUMMARY -->
-    <div class="cart-summary mt-4">
-        <h4>Cart Summary</h4>
-        <p>Total: <strong>${{ cart_total|floatformat:2 }}</strong></p>
-        <a href="{% url 'store:place_order' %}" class="btn-checkout">Proceed to Checkout</a>
+
+    <!-- shipping address  -->
+    <div>
+        Shipping address form
     </div>
+
 
     {% else %}
     <p class="text-center">Your cart is empty. <a href="{% url 'store:products_page' %}"
