@@ -117,12 +117,18 @@
                 <h2> {{order.order_id}} </h2>
                 <p class="order-status"> {{order.status}}</p>
             </div>
-            <form action="{% url 'store:cancel_order' order.id %}" method="post"
-                onsubmit="return confirm('Are you sure you want to cancel this order?')">
+            <div class="d-flex gap-2">
 
-                {% csrf_token %}
-                <button type="submit" class="btn btn-sm btn-danger">Cancel order</button>
-            </form>
+                {% if order.status != "paid" %}
+                <a href="{% url 'store:khalti_payment' order.order_id %}" class="btn btn-success">Pay</a>
+                <form action="{% url 'store:cancel_order' order.id %}" method="post"
+                    onsubmit="return confirm('Are you sure you want to cancel this order?')">
+
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-danger">Cancel order</button>
+                </form>
+                {% endif %}
+            </div>
         </div>
         <hr>
         <thead>
