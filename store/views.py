@@ -303,7 +303,7 @@ def khalti_payment(request, order_id):
             headers=headers,
             timeout=10,
         )
-        print(response.text)
+
         response.raise_for_status()
         data = response.json()
     except requests.RequestException as e:
