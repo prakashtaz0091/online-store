@@ -11,6 +11,7 @@ from django.db import transaction, IntegrityError
 import requests
 import json
 from decimal import Decimal
+from django.conf import settings
 
 
 def home(request):
@@ -246,103 +247,150 @@ def order(request):
     return render(request, "store/order.html", context)
 
 
-@login_required(login_url=reverse_lazy("accounts:login_page"))
+@login_required(login_url="accounts:login_page")
 def khalti_payment(request, order_id):
-    try:
-        order = Order.objects.get(order_id=order_id)
-    except Order.MultipleObjectsReturned:
+    # 1. Fetch order securely (ownership check)
+    order = get_object_or_404(
+        Order,
+        order_id=order_id,
+        user=request.user,
+    )
+
+    if order.status == Order.Status.PAID:
+        messages.info(request, "This order is already paid.")
         return redirect("store:order_page")
-    except Exception as e:
-        print(e)
-    else:
-        purchase_order_id = f"TR-{order.order_id}"
-        payment_obj, created = Payment.objects.get_or_create(
-            purchase_order_id=purchase_order_id, order=order, amount=order.total
+
+    purchase_order_id = f"TR-{order.order_id}"
+
+    # 2. Create or reuse payment safely
+    payment, created = Payment.objects.get_or_create(
+        purchase_order_id=purchase_order_id,
+        defaults={
+            "order": order,
+            "amount": order.total,
+            "status": Payment.Status.INITIATED,
+        },
+    )
+
+    if not created and payment.status != Payment.Status.INITIATED:
+        messages.warning(request, "Payment already processed for this order.")
+        return redirect("store:order_page")
+
+    amount_paisa = int((payment.amount * Decimal("100")).quantize(Decimal("1")))
+
+    payload = {
+        "return_url": settings.SITE_URL + reverse("store:khalti_payment_response"),
+        "website_url": settings.SITE_URL + reverse("store:home_page"),
+        "amount": amount_paisa,
+        "purchase_order_id": payment.purchase_order_id,
+        "purchase_order_name": str(order.order_id),
+        "customer_info": {
+            "name": request.user.get_full_name() or request.user.email,
+            "email": request.user.email,
+            "phone": getattr(order, "phone", "no phone"),
+        },
+    }
+
+    headers = {
+        "Authorization": f"Key {settings.KHALTI_SECRET_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    try:
+        response = requests.post(
+            "https://dev.khalti.com/api/v2/epayment/initiate/",
+            json=payload,
+            headers=headers,
+            timeout=10,
         )
-        if created is not True and payment_obj.status != Payment.Status.INITIATED:
-            messages.warning(request, "Payment already done for this purchase order")
-            return redirect("store:order_page")
+        print(response.text)
+        response.raise_for_status()
+        data = response.json()
+    except requests.RequestException as e:
+        messages.error(request, "Payment service unavailable. Try again later.")
+        return redirect("store:order_page")
 
-        # initiate khalti payment
-        url = "https://dev.khalti.com/api/v2/epayment/initiate/"
-        BASE_URL = "http://localhost:8000"
+    pidx = data.get("pidx")
+    payment_url = data.get("payment_url")
 
-        payload = json.dumps(
-            {
-                "return_url": BASE_URL + reverse("store:khalti_payment_response"),
-                "website_url": BASE_URL + reverse("store:home_page"),
-                "amount": str(payment_obj.amount * 100),
-                "purchase_order_id": payment_obj.purchase_order_id,
-                "purchase_order_name": payment_obj.order.order_id,
-                "customer_info": {
-                    "name": "Ram Bahadur",
-                    "email": "test@khalti.com",
-                    "phone": "9800000001",
-                },
-            }
-        )
-        headers = {
-            "Authorization": "key your_test_merchant_secret_key",
-            "Content-Type": "application/json",
-        }
+    if not pidx or not payment_url:
+        messages.error(request, "Invalid response from payment gateway.")
+        return redirect("store:order_page")
 
-        response = requests.request("POST", url, headers=headers, data=payload)
+    payment.pidx = pidx
+    payment.save(update_fields=["pidx"])
 
-        if not response.status_code == 200:
-            messages.error(request, "Something went wrong, please try again later")
-            return redirect("store:order_page")
-
-        res_data = json.loads(response.text)
-        payment_obj.pidx = res_data.get("pidx")
-        payment_obj.save()
-        payment_url = res_data.get("payment_url")
-        return redirect(payment_url)
+    return redirect(payment_url)
 
 
-@login_required(login_url=reverse_lazy("accounts:login_page"))
+@login_required(login_url="accounts:login_page")
 def khalti_payment_response(request):
-    payment_status = request.GET.get("status")
     pidx = request.GET.get("pidx")
-    transaction_id = request.GET.get("transaction_id")
-    purchase_order_id = request.GET.get("purchase_order_id")
-    amount = float(request.GET.get("total_amount")) / 100
 
-    if payment_status != "Completed":
-        messages.error(request, "Payment failed, please contact the administrator")
+    if not pidx:
+        messages.error(request, "Invalid payment response.")
         return redirect("store:home_page")
 
     try:
-        payment = Payment.objects.get(
-            pidx=pidx,
-            purchase_order_id=purchase_order_id,
-            amount=amount,
-        )
-        print(payment)
+        payment = Payment.objects.select_related("order").get(pidx=pidx)
     except Payment.DoesNotExist:
-        messages.error(
-            request, "Payment not verified yet, please contact the administrator"
-        )
+        messages.error(request, "Payment record not found.")
         return redirect("store:home_page")
-    except Exception as e:
-        messages.error(
-            request, "Payment not verified yet, please contact the administrator"
+
+    # Idempotency
+    if payment.status == Payment.Status.SUCCESS:
+        messages.info(request, "Payment already verified.")
+        return redirect("store:order_page")
+
+    # 1. Verify with Khalti (server-to-server)
+    headers = {
+        "Authorization": f"Key {settings.KHALTI_SECRET_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    try:
+        response = requests.post(
+            "https://dev.khalti.com/api/v2/epayment/lookup/",
+            json={"pidx": pidx},
+            headers=headers,
+            timeout=10,
         )
+        response.raise_for_status()
+        data = response.json()
+    except requests.RequestException:
+        messages.error(request, "Payment verification failed.")
         return redirect("store:home_page")
-    else:
-        try:
-            with transaction.atomic():
-                payment.transaction_id = transaction_id
-                payment.status = Payment.Status.SUCCESS
-                payment.order.status = Order.Status.PAID
-                payment.save()
-                payment.order.save()
-        except (IntegrityError, Exception) as e:
-            print(e)
-            messages.error(
-                request, "Payment not verified yet, please contact the administrator"
-            )
-        else:
-            messages.success(
-                request, "Payment done, please wait for product to reach your doorsteps"
-            )
-            return redirect("store:order_page")
+
+    # 2. Validate response
+    if data.get("status") != "Completed":
+        payment.status = Payment.Status.FAILED
+        payment.save(update_fields=["status"])
+        messages.error(request, "Payment was not completed.")
+        return redirect("store:home_page")
+
+    total_amount_paisa = int(data.get("total_amount", 0))
+    expected_amount_paisa = int(payment.amount * Decimal("100"))
+
+    if total_amount_paisa != expected_amount_paisa:
+        payment.status = Payment.Status.FAILED
+        payment.save(update_fields=["status"])
+        messages.error(request, "Payment amount mismatch.")
+        return redirect("store:home_page")
+
+    transaction_id = data.get("transaction_id")
+
+    # 3. Finalize atomically
+    try:
+        with transaction.atomic():
+            payment.transaction_id = transaction_id
+            payment.status = Payment.Status.SUCCESS
+            payment.save(update_fields=["transaction_id", "status"])
+
+            payment.order.status = Order.Status.PAID
+            payment.order.save(update_fields=["status"])
+    except Exception:
+        messages.error(request, "Payment verification failed.")
+        return redirect("store:home_page")
+
+    messages.success(request, "Payment successful. Your order has been confirmed.")
+    return redirect("store:order_page")
