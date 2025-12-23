@@ -155,3 +155,28 @@ class DeliveryPerson(models.Model):
             self.approved_at = timezone.now()
 
         super().save(*args, **kwargs)
+
+
+class ShippingAddress(models.Model):
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="shipping_addresses"
+    )
+    full_name = models.CharField(max_length=100)
+    phone = models.CharField(max_length=20)
+    address_line = models.TextField()
+    city = models.CharField(max_length=50)
+    postal_code = models.CharField(max_length=20)
+
+    latitude = models.DecimalField(
+        max_digits=9, decimal_places=6, null=True, blank=True
+    )
+    longitude = models.DecimalField(
+        max_digits=9, decimal_places=6, null=True, blank=True
+    )
+    last_location_update = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = [("latitude", "longitude")]
+
+    def __str__(self):
+        return self.full_name

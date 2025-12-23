@@ -1,0 +1,62 @@
+{% load static %}
+
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<!-- Leaflet Control Geocoder -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div id="map" style="height: 400px; margin-bottom: 10px;"></div>
+    <button type="submit">Save Address</button>
+</form>
+
+<script>
+    // Default coordinates (Kathmandu, Nepal)
+    let defaultLat = 0;
+    let defaultLng = 0;
+
+    // Initialize map
+    let map = L.map('map').setView([defaultLat, defaultLng], 13);
+
+    // OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+    }).addTo(map);
+
+    // Add marker
+    let marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
+
+    // Function to update hidden fields
+    function updateLatLng(latlng) {
+        document.getElementById('id_latitude').value = latlng.lat.toFixed(6);
+        document.getElementById('id_longitude').value = latlng.lng.toFixed(6);
+    }
+
+    // Drag marker
+    marker.on('dragend', function () {
+        updateLatLng(marker.getLatLng());
+    });
+
+    // Click on map to move marker
+    map.on('click', function (e) {
+        marker.setLatLng(e.latlng);
+        updateLatLng(e.latlng);
+    });
+
+    // Add search control
+    L.Control.geocoder({
+        defaultMarkGeocode: false
+    })
+        .on('markgeocode', function (e) {
+            let center = e.geocode.center;
+            marker.setLatLng(center);
+            map.setView(center, 15);
+            updateLatLng(center);
+        })
+        .addTo(map);
+</script>

@@ -53,7 +53,7 @@ class Order(models.Model):
     class Status(models.TextChoices):
         PENDING = "pending", "Pending"
         PAID = "paid", "Paid"
-        SHIPPED = "shipped", "Shipped"
+        ON_THE_WAY = "on_the_way", "On the way"
         DELIVERED = "delivered", "Delivered"
         CANCELLED = "cancelled", "Cancelled"
 
@@ -75,6 +75,15 @@ class Order(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    # relations
+    delivery_person = models.ForeignKey(
+        "accounts.DeliveryPerson",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="orders",
+    )
 
     def __str__(self):
         return f"Order {self.order_id} ({self.user.email})"
@@ -100,22 +109,6 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.product_name} x {self.quantity}"
-
-
-class ShippingAddress(models.Model):
-    order = models.OneToOneField(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="shipping_address",
-    )
-    full_name = models.CharField(max_length=100)
-    phone = models.CharField(max_length=20)
-    address_line = models.TextField()
-    city = models.CharField(max_length=50)
-    postal_code = models.CharField(max_length=20)
-
-    def __str__(self):
-        return f"Shipping for Order {self.order.order_id}"
 
 
 class Payment(models.Model):

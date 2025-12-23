@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser
+from .models import CustomUser, ShippingAddress
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 
 
@@ -25,3 +25,21 @@ class CustomUserChangeForm(forms.ModelForm):
     class Meta:
         model = CustomUser
         fields = ("email", "password", "first_name", "last_name", "role")
+
+
+class ShippingAddressForm(forms.ModelForm):
+    class Meta:
+        model = ShippingAddress
+        fields = [
+            "full_name",
+            "phone",
+            "address_line",
+            "city",
+            "postal_code",
+            "latitude",
+            "longitude",
+        ]
+        widgets = {
+            "latitude": forms.HiddenInput(),
+            "longitude": forms.HiddenInput(),
+        }

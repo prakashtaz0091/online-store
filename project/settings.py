@@ -118,7 +118,7 @@ STATIC_URL = "static/"
 MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = "/media/"
 
-KHALTI_SECRET_KEY = "6c31b14cebb440049e0221e5ab166d29"
+KHALTI_SECRET_KEY = "2b97e8dc75b04c1eb29290f31be43338"
 SITE_URL = "http://localhost:8000"
 
 
@@ -226,7 +226,9 @@ JAZZMIN_SETTINGS = {
     # Whether to link font from fonts.googleapis.com (use custom_css to supply font otherwise)
     "use_google_fonts_cdn": True,
     # Whether to show the UI customizer on the sidebar
-    "show_ui_builder": True,
+    "show_ui_builder": False,
+    "theme": "flatly",
+    "dark_mode_theme": "darkly",
     ###############
     # Change view #
     ###############
@@ -239,7 +241,7 @@ JAZZMIN_SETTINGS = {
     "changeform_format": "horizontal_tabs",
     # override change forms on a per modeladmin basis
     "changeform_format_overrides": {
-        "auth.user": "collapsible",
+        "accounts.CustomUser": "collapsible",
         "auth.group": "vertical_tabs",
     },
     # Add a language dropdown into the admin

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile — Delivery{% endblock title %}
+
+{% block extra_head %}
+<style>
+    .profile-container {
+        padding: 60px 0;
+        max-width: 600px;
+    }
+
+    .profile-card {
+        background: #ffffffd9;
+        border-radius: 18px;
+        padding: 30px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .profile-title {
+        font-family: 'Caveat', cursive;
+        color: var(--organic-dark);
+        font-size: 2.4rem;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .profile-item {
+        margin-bottom: 15px;
+        font-size: 1rem;
+        color: #3e6b3e;
+    }
+
+    .profile-item strong {
+        color: var(--organic-dark);
+    }
+
+    .btn-edit {
+        background-color: var(--organic-primary);
+        color: #fff;
+        border-radius: 8px;
+        padding: 10px 22px;
+        font-weight: 500;
+        display: block;
+        text-align: center;
+        text-decoration: none;
+        margin-top: 25px;
+    }
+
+    .btn-edit:hover {
+        background-color: var(--organic-dark);
+        color: #fff;
+    }
+</style>
+{% endblock extra_head %}
+
+{% block content %}
+<section class="container profile-container">
+    <div class="profile-card">
+        <h2 class="profile-title">My Profile</h2>
+
+        <div class="profile-item">
+            <strong>Name:</strong> {{ request.user.get_full_name }}
+        </div>
+
+        <div class="profile-item">
+            <strong>Email:</strong> {{ request.user.email }}
+        </div>
+
+        <div class="profile-item">
+            <strong>Phone:</strong> {{ request.user.profile.phone }}
+        </div>
+
+        <div class="profile-item">
+            <strong>Status:</strong> Active Delivery Partner
+        </div>
+
+    </div>
+</section>
+{% endblock content %}

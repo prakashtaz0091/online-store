@@ -1,5 +1,6 @@
 from django import forms
-from .models import Category
+from .models import Category, Order
+from accounts.models import DeliveryPerson
 
 
 SORTING_CHOICES = [
@@ -47,3 +48,15 @@ class ProductFilterForm(forms.Form):
         initial=SORTING_CHOICES[0],
         widget=forms.Select(attrs={"class": "form-control"}),
     )
+
+
+class OrderChangeForm(forms.ModelForm):
+
+    delivery_person = forms.ModelChoiceField(
+        queryset=DeliveryPerson.objects.filter(is_verified=True, is_active=True),
+        required=False,
+    )
+
+    class Meta:
+        model = Order
+        fields = ["delivery_person"]

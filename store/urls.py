@@ -26,4 +26,11 @@ urlpatterns = [
         views.khalti_payment_response,
         name="khalti_payment_response",
     ),
+    # delivery person
+    path("delivery/", views.delivery_person_page, name="delivery_person_page"),
+    path(
+        "delivery/profile/",
+        views.delivery_person_profile,
+        name="delivery_person_profile",
+    ),
 ]

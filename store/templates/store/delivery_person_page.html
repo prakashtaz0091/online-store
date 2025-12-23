@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}My Deliveries — Organic Store{% endblock title %}
+
+{% block extra_head %}
+<style>
+    .delivery-container {
+        padding: 60px 0;
+    }
+
+    .page-title {
+        font-family: 'Caveat', cursive;
+        color: var(--organic-dark);
+        font-size: 2.5rem;
+        margin-bottom: 30px;
+    }
+
+    .order-card {
+        background: #ffffffd9;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        margin-bottom: 20px;
+    }
+
+    .order-card h5 {
+        color: var(--organic-dark);
+        font-weight: 600;
+    }
+
+    .order-meta {
+        font-size: 0.95rem;
+        color: #4f7f4f;
+        margin-bottom: 10px;
+    }
+
+    .status-badge {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .status-assigned {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-delivered {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .btn-view {
+        background-color: var(--organic-primary);
+        color: #fff;
+        border-radius: 8px;
+        padding: 8px 18px;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .btn-view:hover {
+        background-color: var(--organic-dark);
+        color: #fff;
+    }
+</style>
+{% endblock extra_head %}
+
+{% block content %}
+<section class="container delivery-container">
+    <h2 class="page-title">My Assigned Orders</h2>
+
+    {% if orders %}
+    {% for order in orders %}
+    <div class="order-card">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5>Order #{{ order.order_id }}</h5>
+            <span class="status-badge 
+                    {% if order.status == 'delivered' %}
+                        status-delivered
+                    {% else %}
+                        status-assigned
+                    {% endif %}
+                ">
+                {{ order.status|title }}
+            </span>
+        </div>
+
+        <div class="order-meta">
+            <p><strong>Customer:</strong> {{ order.user.email }}</p>
+            <p><strong>Delivery Address:</strong> {{ order.delivery_address }}</p>
+            <p><strong>Total:</strong> Rs. {{ order.total }}</p>
+        </div>
+
+    </div>
+    {% endfor %}
+    {% else %}
+    <p>No orders assigned yet.</p>
+    {% endif %}
+</section>
+{% endblock content %}

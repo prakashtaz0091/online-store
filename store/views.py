@@ -394,3 +394,19 @@ def khalti_payment_response(request):
 
     messages.success(request, "Payment successful. Your order has been confirmed.")
     return redirect("store:order_page")
+
+
+@login_required(login_url="accounts:login_page")
+def delivery_person_page(request):
+    orders = Order.objects.filter(
+        status=Order.Status.PAID, delivery_person=request.user.delivery_profile
+    )
+    context = {
+        "orders": orders,
+    }
+    return render(request, "store/delivery_person_page.html", context)
+
+
+@login_required(login_url="accounts:login_page")
+def delivery_person_profile(request):
+    return render(request, "store/delivery_person_profile.html")

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile — Organic Store{% endblock title %}
+
+{% block extra_head %}
+<style>
+    .profile-container {
+        padding: 60px 0;
+        max-width: 900px;
+    }
+
+    .profile-title {
+        font-family: 'Caveat', cursive;
+        color: var(--organic-dark);
+        font-size: 2.6rem;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .profile-card {
+        background: #ffffffd9;
+        border-radius: 18px;
+        padding: 30px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        margin-bottom: 30px;
+    }
+
+    .section-title {
+        font-family: 'Caveat', cursive;
+        font-size: 1.9rem;
+        color: var(--organic-dark);
+        margin-bottom: 20px;
+    }
+
+    .profile-item {
+        font-size: 1rem;
+        color: #3e6b3e;
+        margin-bottom: 15px;
+    }
+
+    .profile-item strong {
+        color: var(--organic-dark);
+    }
+
+    .form-control {
+        border-radius: 10px;
+    }
+
+    .btn-save {
+        background-color: var(--organic-primary);
+        color: #fff;
+        border-radius: 10px;
+        padding: 10px 26px;
+        font-weight: 600;
+        border: none;
+        transition: 0.2s;
+    }
+
+    .btn-save:hover {
+        background-color: var(--organic-dark);
+    }
+</style>
+{% endblock extra_head %}
+
+{% block content %}
+<section class="container profile-container">
+    <h2 class="profile-title">My Profile</h2>
+
+    <!-- BASIC INFO -->
+    <div class="profile-card">
+        <h3 class="section-title">Basic Information</h3>
+
+        <div class="profile-item">
+            <strong>Name:</strong> {{ request.user.get_full_name }}
+        </div>
+
+        <div class="profile-item">
+            <strong>Email:</strong> {{ request.user.email }}
+        </div>
+    </div>
+
+    <!-- HOME ADDRESS -->
+    <div class="profile-card">
+        <h3 class="section-title">Home Address</h3>
+        {% if addresses %}
+        {% for address in addresses %}
+        Location: {{address.latitude}} | {{address.longitude}}
+        <hr>
+        {% endfor %}
+        {% endif %}
+        <hr>
+
+        {% include 'accounts/map.html' %}
+    </div>
+</section>
+{% endblock content %}
