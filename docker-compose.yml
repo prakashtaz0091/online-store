@@ -1,0 +1,22 @@
+version: "3.9"
+
+services:
+  django:
+    build: .
+    container_name: django-app
+    command: daphne -b 0.0.0.0 -p 8000 project.asgi:application
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"

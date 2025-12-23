@@ -12,6 +12,7 @@ import requests
 import json
 from decimal import Decimal
 from django.conf import settings
+from .events import publish_event
 
 
 def home(request):
@@ -220,6 +221,17 @@ def place_order(request):
         print("Unexpected behaviour: ", str(e))
         return redirect("store:cart_page")
     else:
+        transaction.on_commit(
+            lambda: publish_event(
+                "order.created",
+                {
+                    "order_id": new_order.order_id,
+                    "total": str(new_order.total),
+                    "status": new_order.status,
+                },
+            )
+        )
+
         messages.success(request, "Order placed successful")
         return redirect("store:order_page")
 

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Realtime Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+        }
+
+        #events {
+            margin-top: 20px;
+        }
+
+        .event {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .order-id {
+            font-weight: bold;
+        }
+
+        .status {
+            color: green;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Realtime Dashboard</h1>
+    <div id="events">
+        <!-- Order events will appear here -->
+    </div>
+
+    <script>
+        const eventsContainer = document.getElementById('events');
+
+        // Connect to WebSocket
+        const socket = new WebSocket(
+            `ws://${window.location.host}/ws/dashboard/`
+        );
+
+        socket.onopen = function () {
+            console.log("WebSocket connected");
+        };
+
+        socket.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+            const div = document.createElement('div');
+            div.classList.add('event');
+            div.innerHTML = `
+                <span class="order-id">Order ID: ${data.data.order_id}</span> -
+                <span class="status">${data.type}</span> -
+                <span>Total: ${data.data.total}</span>
+            `;
+            // Prepend new events to the top
+            eventsContainer.prepend(div);
+        };
+
+        socket.onclose = function () {
+            console.log("WebSocket disconnected");
+        };
+
+        socket.onerror = function (err) {
+            console.error("WebSocket error:", err);
+        };
+    </script>
+</body>
+
+</html>
