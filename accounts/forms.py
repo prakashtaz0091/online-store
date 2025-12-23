@@ -42,4 +42,9 @@ class ShippingAddressForm(forms.ModelForm):
         widgets = {
             "latitude": forms.HiddenInput(),
             "longitude": forms.HiddenInput(),
+            "full_name": forms.TextInput(attrs={"class": "form-control"}),
+            "phone": forms.TextInput(attrs={"class": "form-control"}),
+            "address_line": forms.Textarea(attrs={"class": "form-control"}),
+            "city": forms.TextInput(attrs={"class": "form-control"}),
+            "postal_code": forms.TextInput(attrs={"class": "form-control"}),
         }

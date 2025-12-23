@@ -10,15 +10,19 @@
 
 <form method="post">
     {% csrf_token %}
+    <div id="map"></div>
+    <h2>Add new address</h2>
+    <p>Please search for your place/city/location and drag marker to desired location on map and fill the form below</p>
+    <br>
+
     {{ form.as_p }}
-    <div id="map" style="height: 400px; margin-bottom: 10px;"></div>
-    <button type="submit">Save Address</button>
+    <button type="submit" class="btn-save">Save Address</button>
 </form>
 
 <script>
     // Default coordinates (Kathmandu, Nepal)
-    let defaultLat = 0;
-    let defaultLng = 0;
+    let defaultLat = 27.7172;
+    let defaultLng = 85.3240;
 
     // Initialize map
     let map = L.map('map').setView([defaultLat, defaultLng], 13);
@@ -28,27 +32,23 @@
         maxZoom: 19,
     }).addTo(map);
 
-    // Add marker
+    // Add draggable marker
     let marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
 
-    // Function to update hidden fields
     function updateLatLng(latlng) {
         document.getElementById('id_latitude').value = latlng.lat.toFixed(6);
         document.getElementById('id_longitude').value = latlng.lng.toFixed(6);
     }
 
-    // Drag marker
     marker.on('dragend', function () {
         updateLatLng(marker.getLatLng());
     });
 
-    // Click on map to move marker
     map.on('click', function (e) {
         marker.setLatLng(e.latlng);
         updateLatLng(e.latlng);
     });
 
-    // Add search control
     L.Control.geocoder({
         defaultMarkGeocode: false
     })
@@ -59,4 +59,12 @@
             updateLatLng(center);
         })
         .addTo(map);
+
+    // Function to show any address on map when clicked
+    function showOnMap(lat, lng) {
+        let latlng = L.latLng(lat, lng);
+        marker.setLatLng(latlng);
+        map.setView(latlng, 15);
+        updateLatLng(latlng);
+    }
 </script>
