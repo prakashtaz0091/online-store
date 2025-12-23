@@ -1,0 +1,339 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile — Organic Store{% endblock title %}
+
+{% block extra_head %}
+<style>
+    .profile-container {
+        padding: 60px 0;
+        max-width: 1000px;
+        margin: auto;
+    }
+
+    .profile-title {
+        font-family: 'Caveat', cursive;
+        color: var(--organic-dark);
+        font-size: 2.6rem;
+        margin-bottom: 40px;
+        text-align: center;
+    }
+
+    .profile-card {
+        background: #ffffffd9;
+        border-radius: 18px;
+        padding: 30px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        margin-bottom: 30px;
+        transition: 0.2s;
+    }
+
+    .profile-card:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .section-title {
+        font-family: 'Caveat', cursive;
+        font-size: 1.9rem;
+        color: var(--organic-dark);
+        margin-bottom: 20px;
+        border-bottom: 2px solid var(--organic-primary);
+        padding-bottom: 5px;
+    }
+
+    /* Flex layout for addresses + map/form */
+    .addresses-map-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
+    }
+
+    .addresses-column {
+        flex: 1;
+        min-width: 280px;
+    }
+
+    .map-column {
+        flex: 2;
+        min-width: 320px;
+    }
+
+    .address-list {
+        margin-bottom: 20px;
+    }
+
+    .address-item {
+        padding: 15px 18px;
+        background: #f2f9f2;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        display: flex;
+        flex-direction: column;
+        font-size: 0.95rem;
+        color: #3e6b3e;
+        position: relative;
+    }
+
+    .address-item span {
+        margin-bottom: 5px;
+    }
+
+    .btn-show-map {
+        background-color: var(--organic-primary);
+        color: #fff;
+        border-radius: 10px;
+        padding: 6px 16px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: 0.2s;
+        align-self: flex-start;
+        margin-top: 5px;
+    }
+
+    .btn-show-map:hover {
+        background-color: var(--organic-dark);
+    }
+
+    .btn-delete-address {
+        background-color: red;
+        color: #fff;
+        border-radius: 10px;
+        padding: 6px 16px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: 0.2s;
+        align-self: flex-start;
+        margin-top: 5px;
+    }
+
+    #map {
+        height: 400px;
+        border-radius: 15px;
+        margin-bottom: 15px;
+    }
+
+    .btn-save {
+        background-color: var(--organic-primary);
+        color: #fff;
+        border-radius: 10px;
+        padding: 8px 26px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .btn-save:hover {
+        background-color: var(--organic-dark);
+    }
+
+    @media (max-width: 768px) {
+        .addresses-map-container {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock extra_head %}
+
+{% block content %}
+<section class="container">
+    <h2 class="profile-title">My Profile</h2>
+
+    <!-- BASIC INFO -->
+    <div class="profile-card">
+        <h3 class="section-title">Basic Information</h3>
+
+        <div class="profile-item">
+            <strong>Name:</strong> {{ request.user.get_full_name }}
+        </div>
+
+        <div class="profile-item">
+            <strong>Email:</strong> {{ request.user.email }}
+        </div>
+    </div>
+
+    {% if request.user.role == "customer" %}
+    <!-- HOME ADDRESSES + MAP -->
+    <div class="profile-card">
+        <h3 class="section-title">Home Addresses</h3>
+
+        <div class="addresses-map-container">
+            <!-- Addresses List -->
+            <div class="addresses-column">
+                {% if addresses %}
+                <div class="address-list">
+                    {% for address in addresses %}
+                    <div class="address-item">
+                        <span><strong>Name:</strong> {{ address.full_name }}</span>
+                        <span><strong>Phone:</strong> {{ address.phone }}</span>
+                        <span><strong>Address:</strong> {{ address.address_line }}, {{ address.city }}</span>
+                        <span><strong>Postal Code:</strong> {{ address.postal_code }}</span>
+                        {% if address.latitude and address.longitude %}
+                        <span><strong>Coordinates:</strong> {{ address.latitude }}, {{ address.longitude }}</span>
+                        {% endif %}
+                        {% if address.last_location_update %}
+                        <span><strong>Last Updated:</strong> {{ address.last_location_update|date:"M d, Y H:i" }}</span>
+                        {% endif %}
+                        {% if address.latitude and address.longitude %}
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn-show-map"
+                                onclick="showOnMap({{ address.latitude }}, {{ address.longitude }})">
+                                Show on Map
+                            </button>
+                            <a class="btn-show-map"
+                                href="https://www.google.com/maps/place/{{ address.latitude }},{{ address.longitude }}/@{{ address.latitude }},{{ address.longitude }},1033m/data=!3m2!1e3!4b1!4m4!3m3!8m2!3d{{ address.latitude }}!4d{{ address.longitude }}?entry=ttu"
+                                target="_blank">View on Google Maps</a>
+
+
+
+                            <form action="" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-delete-address"
+                                    onclick="return window.confirm('Are you sure to delete the address?')">
+                                    Delete
+                                </button>
+
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p>No addresses saved yet.</p>
+                {% endif %}
+            </div>
+
+            <!-- Map + Form -->
+            <div class="map-column">
+                {% include 'accounts/map.html' %}
+            </div>
+        </div>
+    </div>
+
+    {% endif %}
+
+    {% if request.user.role == "delivery_person" %}
+    <!-- HOME ADDRESSES + MAP -->
+    <div class="profile-card">
+        <h3 class="section-title">Assigned Orders</h3>
+        <div class="container mt-4">
+            <ul class="nav nav-underline" id="deliveryTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="to-deliver-tab" data-bs-toggle="tab"
+                        data-bs-target="#to-deliver" type="button" role="tab" aria-controls="to-deliver"
+                        aria-selected="true">Pending Deliveries</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed"
+                        type="button" role="tab" aria-controls="completed" aria-selected="false">Completed
+                        Deliveries</button>
+                </li>
+            </ul>
+
+            <div class="tab-content mt-3" id="deliveryTabsContent">
+                <div class="tab-pane fade show active" id="to-deliver" role="tabpanel" aria-labelledby="to-deliver-tab"
+                    tabindex="0">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Pending Deliveries</h5>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Order ID</th>
+                                        <th scope="col">Customer Name</th>
+                                        <th scope="col">Amount</th>
+                                        <th scope="col">Delivery Address</th>
+                                        <th scope="col">View Address</th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in pending_orders %}
+                                    <tr>
+                                        <td>{{ order.order_id }}</td>
+                                        <td> {{ order.user.get_full_name }} </td>
+                                        <td> {{ order.total }} </td>
+                                        <td>
+
+                                            {{ order.user.shipping_addresses.all.0 }}
+                                        </td>
+                                        <td>
+                                            <a class="btn btn-success btn-sm"
+                                                href="https://www.google.com/maps/place/{{ order.user.shipping_addresses.all.0.latitude }},{{ order.user.shipping_addresses.all.0.longitude }}/@{{ order.user.shipping_addresses.all.0.latitude }},{{ order.user.shipping_addresses.all.0.longitude }},1033m/data=!3m2!1e3!4b1!4m4!3m3!8m2!3d{{ order.user.shipping_addresses.all.0.latitude }}!4d{{ order.user.shipping_addresses.all.0.longitude }}?entry=ttu"
+                                                target="_blank">View on Google Maps</a>
+                                        </td>
+                                        <td>
+                                            <form action="{% url 'accounts:set_as_delivered' order.order_id %}"
+                                                method="post">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-success btn-sm" href="">Set as
+                                                    Delivered</button>
+
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="3">No pending orders</td>
+                                    </tr>
+                                    {% endfor %}
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="completed" role="tabpanel" aria-labelledby="completed-tab" tabindex="0">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Completed Deliveries</h5>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Order ID</th>
+                                        <th scope="col">Customer Name</th>
+                                        <th scope="col">Amount</th>
+                                        <th scope="col">Delivery Address</th>
+                                        <th scope="col">View Address</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in delivered_orders %}
+                                    <tr>
+                                        <td>{{ order.order_id }}</td>
+                                        <td> {{ order.user.get_full_name }} </td>
+                                        <td> {{ order.total }} </td>
+                                        <td>
+
+                                            {{ order.user.shipping_addresses.all.0 }}
+                                        </td>
+                                        <td>
+                                            <a class="btn btn-success btn-sm"
+                                                href="https://www.google.com/maps/place/{{ order.user.shipping_addresses.all.0.latitude }},{{ order.user.shipping_addresses.all.0.longitude }}/@{{ order.user.shipping_addresses.all.0.latitude }},{{ order.user.shipping_addresses.all.0.longitude }},1033m/data=!3m2!1e3!4b1!4m4!3m3!8m2!3d{{ order.user.shipping_addresses.all.0.latitude }}!4d{{ order.user.shipping_addresses.all.0.longitude }}?entry=ttu"
+                                                target="_blank">View on Google Maps</a>
+                                        </td>
+
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="3">No completed orders</td>
+                                    </tr>
+                                    {% endfor %}
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% endif %}
+
+
+
+</section>
+{% endblock content %}

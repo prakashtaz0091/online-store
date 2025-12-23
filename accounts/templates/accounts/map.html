@@ -1,0 +1,70 @@
+{% load static %}
+
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<!-- Leaflet Control Geocoder -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+<form method="post">
+    {% csrf_token %}
+    <div id="map"></div>
+    <h2>Add new address</h2>
+    <p>Please search for your place/city/location and drag marker to desired location on map and fill the form below</p>
+    <br>
+
+    {{ form.as_p }}
+    <button type="submit" class="btn-save">Save Address</button>
+</form>
+
+<script>
+    // Default coordinates (Kathmandu, Nepal)
+    let defaultLat = 27.7172;
+    let defaultLng = 85.3240;
+
+    // Initialize map
+    let map = L.map('map').setView([defaultLat, defaultLng], 13);
+
+    // OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+    }).addTo(map);
+
+    // Add draggable marker
+    let marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
+
+    function updateLatLng(latlng) {
+        document.getElementById('id_latitude').value = latlng.lat.toFixed(6);
+        document.getElementById('id_longitude').value = latlng.lng.toFixed(6);
+    }
+
+    marker.on('dragend', function () {
+        updateLatLng(marker.getLatLng());
+    });
+
+    map.on('click', function (e) {
+        marker.setLatLng(e.latlng);
+        updateLatLng(e.latlng);
+    });
+
+    L.Control.geocoder({
+        defaultMarkGeocode: false
+    })
+        .on('markgeocode', function (e) {
+            let center = e.geocode.center;
+            marker.setLatLng(center);
+            map.setView(center, 15);
+            updateLatLng(center);
+        })
+        .addTo(map);
+
+    // Function to show any address on map when clicked
+    function showOnMap(lat, lng) {
+        let latlng = L.latLng(lat, lng);
+        marker.setLatLng(latlng);
+        map.setView(latlng, 17);
+        updateLatLng(latlng);
+    }
+</script>
