@@ -1,5 +1,5 @@
 from django import forms
-from .models import Category, Order
+from .models import Category, Order, Review
 from accounts.models import DeliveryPerson
 
 
@@ -66,3 +66,40 @@ class OrderChangeForm(forms.ModelForm):
         if self.cleaned_data["delivery_person"]:
             self.instance.status = Order.Status.ON_THE_WAY
         return super().save(commit)
+
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ["text", "rating"]
+
+        widgets = {
+            "text": forms.Textarea(
+                attrs={"class": "form-control", "placeholder": "Write your review here"}
+            ),
+            "rating": forms.HiddenInput(),
+        }
+
+    def save(self, commit=True, context=None):
+        if not context:
+            raise ValueError("Context with user and product is required")
+
+        user = context.get("user")
+        product = context.get("product")
+
+        if commit:
+            review, created = Review.objects.update_or_create(
+                user=user,
+                product=product,
+                defaults={
+                    "text": self.cleaned_data.get("text"),
+                    "rating": self.cleaned_data.get("rating"),
+                },
+            )
+            return review
+        else:
+            # For commit=False, return unsaved instance
+            review = super().save(commit=False)
+            review.user = user
+            review.product = product
+            return review

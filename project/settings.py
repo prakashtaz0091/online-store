@@ -118,7 +118,7 @@ STATIC_URL = "static/"
 MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = "/media/"
 
-KHALTI_SECRET_KEY = "6c31b14cebb440049e0221e5ab166d29"
+KHALTI_SECRET_KEY = "2b97e8dc75b04c1eb29290f31be43338"
 SITE_URL = "http://localhost:8000"
 
 

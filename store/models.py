@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class Category(models.Model):
@@ -148,3 +149,27 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"{self.order.order_id} - {self.status}"
+
+
+class Review(models.Model):
+    user = models.ForeignKey(
+        "accounts.CustomUser",
+        on_delete=models.PROTECT,
+        related_name="reviews",
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="reviews",
+    )
+    text = models.TextField(help_text="Write your review here")
+    rating = models.PositiveSmallIntegerField(
+        help_text="Rating out of 5",
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.email} -> {self.product.name}"

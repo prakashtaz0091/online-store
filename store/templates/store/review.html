@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Review — Organic Store{% endblock title %}
+{% block extra_head %}
+<style>
+    #stars i {
+        color: var(--organic-dark);
+        font-size: 30px;
+    }
+
+    .image-wrapper {
+        width: 100%;
+        height: 500px;
+        position: relative;
+    }
+
+    .image-wrapper img {
+        height: 100%;
+        width: 100%;
+        object-fit: cover;
+    }
+
+    .product-info {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.237);
+        padding: 10px;
+        color: whitesmoke;
+        backdrop-filter: blur(3px);
+    }
+</style>
+{% endblock extra_head %}
+
+{% block content %}
+<section class="container cart-container">
+    <h2 class="mb-4" style="font-family: 'Caveat', cursive; color: var(--organic-dark);">Product Review</h2>
+
+    <div class="d-flex gap-3">
+        <div class="container">
+            <div class="image-wrapper">
+                <div class="product-info">
+                    <h4>{{ order_item.product_name }}</h4>
+                    <h4>{{ order_item.price }}</h4>
+                </div>
+                <img src="{{ order_item.product.image.url }}" alt="">
+            </div>
+        </div>
+        <form action="{% url 'store:review' order_item.id %}" method="post" class="d-flex flex-column  gap-2 w-50">
+            {% csrf_token %}
+            <input type="hidden" name="order_item_id" value="{{order_item.id}}">
+            {{form.text}}
+            {{form.rating}}
+            <div>
+                Rating out of 5
+            </div>
+            <div id="stars">
+                <i data-rating="1" class="bi bi-star"></i>
+                <i data-rating="2" class="bi bi-star"></i>
+                <i data-rating="3" class="bi bi-star"></i>
+                <i data-rating="4" class="bi bi-star"></i>
+                <i data-rating="5" class="bi bi-star"></i>
+            </div>
+            <button class="btn btn-success" type="submit">Post Review</button>
+        </form>
+    </div>
+
+
+</section>
+
+<script>
+    const stars = document.getElementById("stars")
+    const rating_field = document.getElementById("id_rating")
+
+    if (rating_field.value !== null) {
+        const rating = rating_field.value
+        fillStars(rating)
+
+    }
+
+    stars.addEventListener("click", (e) => {
+        const rating = e.target.dataset.rating;
+        if (!rating) return;
+
+        rating_field.value = rating;
+        fillStars(rating)
+    });
+
+    function fillStars(rating) {
+        [...stars.children].forEach((star, i) => {
+            star.className = i < rating ? "bi bi-star-fill" : "bi bi-star";
+        });
+    }
+
+
+
+</script>
+{% endblock content %}

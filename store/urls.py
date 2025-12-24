@@ -26,4 +26,6 @@ urlpatterns = [
         views.khalti_payment_response,
         name="khalti_payment_response",
     ),
+    # review
+    path("order/<order_item_id>/review/", views.review, name="review"),
 ]
