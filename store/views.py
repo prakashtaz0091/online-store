@@ -398,49 +398,34 @@ def khalti_payment_response(request):
 
 @login_required(login_url="accounts:login_page")
 def review(request, order_item_id):
+    order_item = get_object_or_404(OrderItem, pk=order_item_id)
+
+    review_instance = Review.objects.filter(
+        user=request.user,
+        product=order_item.product,
+    ).first()
 
     if request.method == "POST":
-        order_item_id = request.POST.get("order_item_id")
-        text = request.POST.get("text")
-        try:
-            rating = int(request.POST.get("rating"))
-            order_item = OrderItem.objects.get(pk=order_item_id)
-        except ValueError:
-            messages.error(request, "Rating must be a number")
-            return redirect("store:review", order_item_id=order_item_id)
-        except OrderItem.DoesNotExist:
-            messages.error(request, "Order item doesn't exists")
-            return redirect("store:review", order_item_id=order_item_id)
+        form = ReviewForm(
+            request.POST,
+            instance=review_instance,
+            user=request.user,
+            product=order_item.product,
+        )
 
-        form = ReviewForm(data={"text": text, "rating": rating})
         if form.is_valid():
-            form.save(context={"product": order_item.product, "user": request.user})
+            form.save()
             return redirect("store:order_page")
 
-        return redirect("store:review", order_item_id=order_item_id)
-
-    try:
-        order_item = OrderItem.objects.get(pk=order_item_id)
-    except OrderItem.DoesNotExist:
-        messages.error(request, "Order item doesn't exists")
-        return redirect("store:order_page")
-
-    form = ReviewForm()
-    try:
-        review = Review.objects.filter(
-            user=request.user, product=order_item.product
-        ).get()
-    except Review.DoesNotExist:
-        pass
-    except Review.MultipleObjectsReturned:
-        review = Review.objects.filter(
-            user=request.user, product=order_item.product
-        ).first()
+        messages.error(request, "Please correct the errors below.")
     else:
-        form = ReviewForm(instance=review)
+        form = ReviewForm(instance=review_instance)
 
-    context = {
-        "order_item": order_item,
-        "form": form,
-    }
-    return render(request, "store/review.html", context)
+    return render(
+        request,
+        "store/review.html",
+        {
+            "order_item": order_item,
+            "form": form,
+        },
+    )
