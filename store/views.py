@@ -13,19 +13,27 @@ import json
 from decimal import Decimal
 from django.conf import settings
 
+# import cache_page
+from django.views.decorators.cache import cache_page
+from django.core.cache import cache
+
 
 def home(request):
 
-    featured_products = Product.objects.filter(featured=True).order_by("-created_at")[
-        :8
-    ]
+    featured_products = (
+        Product.objects.filter(featured=True)
+        .order_by("-created_at")[:8]
+        .only("name", "price", "image")
+    )
 
     context = {"products": featured_products}
 
     return render(request, "store/home.html", context)
 
 
+@cache_page(10)
 def products(request):
+    print("recomputing products----------------------------------")
     products = Product.objects.all()
 
     filter_form = ProductFilterForm(request.GET)
@@ -158,10 +166,14 @@ def cart(request):
             # for cart_item in cart_products:
             #     cart_total += cart_item.get_total_price
 
-            cart_products = CartProduct.objects.filter(cart=user_cart).annotate(
-                subtotal=ExpressionWrapper(
-                    F("product__price") * F("quantity"),
-                    output_field=DecimalField(max_digits=10, decimal_places=2),
+            cart_products = (
+                CartProduct.objects.filter(cart=user_cart)
+                .select_related("product")
+                .annotate(
+                    subtotal=ExpressionWrapper(
+                        F("product__price") * F("quantity"),
+                        output_field=DecimalField(max_digits=10, decimal_places=2),
+                    )
                 )
             )
 
@@ -240,7 +252,9 @@ def cancel_order(request, pk):
 @login_required(login_url=reverse_lazy("accounts:login_page"))
 def order(request):
 
-    orders = Order.objects.filter(user=request.user)
+    orders = Order.objects.filter(user=request.user).prefetch_related(
+        "items", "items__product", "payment"
+    )
 
     context = {"orders": orders}
 
