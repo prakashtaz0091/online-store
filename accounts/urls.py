@@ -15,4 +15,6 @@ urlpatterns = [
         views.set_as_delivered,
         name="set_as_delivered",
     ),
+    # dummy admin
+    path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),
 ]

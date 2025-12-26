@@ -8,6 +8,10 @@ from .models import ShippingAddress, CustomUser
 from store.models import Order
 from django.views.decorators.http import require_POST
 
+import logging
+
+logger = logging.getLogger("accounts")
+
 
 def register_view(request):
     if request.method == "POST":
@@ -40,6 +44,9 @@ def login_view(request):
                 request.session.set_expiry(0)
 
             messages.success(request, "Logged in successful")
+            logger.info(
+                f"\nUser: {email}, role: {user.role} , logged in, remembered :{remember_me}"
+            )
 
             if user.role == CustomUser.Roles.DELIVERY_PERSON:
                 return redirect("accounts:customer_profile")
@@ -52,6 +59,7 @@ def login_view(request):
 
 
 def logout_view(request):
+    logger.info(f"\nUser: {request.user.email}, role: {request.user.role} , logged out")
     logout(request)
     return redirect(reverse("accounts:login_page"))
 
@@ -98,3 +106,7 @@ def set_as_delivered(request, order_id):
         messages.error(request, "Order not found")
 
     return redirect("accounts:customer_profile")
+
+
+def admin_dashboard(request):
+    print("admin dashboard")
