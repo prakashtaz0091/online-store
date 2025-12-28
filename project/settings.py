@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "accounts",
     "store",
     "debug_toolbar",
+    "background_task",
 ]
 
 MIDDLEWARE = [
@@ -254,3 +255,22 @@ LOGGING = {
         },
     },
 }
+
+
+# mailhog email for testing
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_HOST = "localhost"
+# EMAIL_PORT = 1025
+# DEFAULT_FROM_EMAIL = "test@example.com"
+
+
+# real email for production
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"  # or "smtp.office365.com" or any other email provider
+EMAIL_PORT = 587  # according to your email provider
+EMAIL_HOST_USER = "youraccount@gmail.com"
+EMAIL_HOST_PASSWORD = "your app password"
+EMAIL_USE_TLS = True  # use if your email provider doesn't support SSL and supports TLS
+
+# EMAIL_USE_SSL = False # keep True if your email provider doesn't support TLS and supports SSL
+# Note: TLS and SSL are mutually exclusive and they are used for security purposes (e.g. encryption, for privacy)

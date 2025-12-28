@@ -13,9 +13,9 @@ import json
 from decimal import Decimal
 from django.conf import settings
 
-# import cache_page
 from django.views.decorators.cache import cache_page
 from django.core.cache import cache
+from . import signals
 
 
 def home(request):
