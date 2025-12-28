@@ -17,6 +17,9 @@ from django.conf import settings
 from django.views.decorators.cache import cache_page
 from django.core.cache import cache
 
+# send mail
+from django.core.mail import send_mail
+
 
 def home(request):
 
@@ -84,6 +87,12 @@ def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
 
     context = {"product": product}
+    send_mail(
+        "Product Added to Cart",
+        f"Product {product.name} has been added to your cart.",
+        settings.DEFAULT_FROM_EMAIL,
+        ["prakashtaz0091@gmail.com"],
+    )
 
     return render(request, "store/product_detail.html", context)
 
