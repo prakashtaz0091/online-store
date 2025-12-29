@@ -312,7 +312,7 @@ def khalti_payment(request, order_id):
 
     try:
         response = requests.post(
-            "https://dev.khalti.com/api/v2/epayment/initiate/",
+            url=f"{settings.KHALTI_BASE_URL}/epayment/initiate/",
             json=payload,
             headers=headers,
             timeout=10,
@@ -364,7 +364,7 @@ def khalti_payment_response(request):
 
     try:
         response = requests.post(
-            "https://dev.khalti.com/api/v2/epayment/lookup/",
+            url=f"{settings.KHALTI_BASE_URL}/epayment/lookup/",
             json={"pidx": pidx},
             headers=headers,
             timeout=10,

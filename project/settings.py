@@ -141,6 +141,7 @@ STATIC_URL = "static/"
 MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = "/media/"
 
+KHALTI_BASE_URL = config("KHALTI_BASE_URL")
 KHALTI_SECRET_KEY = config("KHALTI_SECRET_KEY")
 SITE_URL = "http://localhost:8000"
 
