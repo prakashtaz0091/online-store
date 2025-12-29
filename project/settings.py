@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -9,10 +10,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-_y8gyn%%pf8l!m##%%hl88qve(bp_7@t=e*10fx9_6u9yx2^=6"
+SECRET_KEY = config("DJANGO_SECRET")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config("DEBUG", cast=bool)
 
 ALLOWED_HOSTS = ["d6c18ba958c5.ngrok-free.app", "*"]
 
@@ -82,9 +83,19 @@ WSGI_APPLICATION = "project.wsgi.application"
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
+    # "default": {
+    #     "ENGINE": "django.db.backends.sqlite3",
+    #     "NAME": BASE_DIR / "db.sqlite3",
+    # }
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": config("DB_NAME"),
+        "USER": config("DB_USER"),
+        "PASSWORD": config("DB_PASSWORD"),
+        "HOST": config("DB_HOST"),  # Use 'localhost' for a local PostgreSQL instance
+        "PORT": config(
+            "DB_PORT"
+        ),  # Leave empty to use the default PostgreSQL port (5432)
     }
 }
 
@@ -130,7 +141,7 @@ STATIC_URL = "static/"
 MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = "/media/"
 
-KHALTI_SECRET_KEY = "2b97e8dc75b04c1eb29290f31be43338"
+KHALTI_SECRET_KEY = config("KHALTI_SECRET_KEY")
 SITE_URL = "http://localhost:8000"
 
 
@@ -268,8 +279,8 @@ LOGGING = {
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"  # or "smtp.office365.com" or any other email provider
 EMAIL_PORT = 587  # according to your email provider
-EMAIL_HOST_USER = "youraccount@gmail.com"
-EMAIL_HOST_PASSWORD = "your app password"
+EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 EMAIL_USE_TLS = True  # use if your email provider doesn't support SSL and supports TLS
 
 # EMAIL_USE_SSL = False # keep True if your email provider doesn't support TLS and supports SSL
