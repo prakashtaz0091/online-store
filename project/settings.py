@@ -35,12 +35,9 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "accounts",
     "store",
-    "debug_toolbar",
-    "background_task",
 ]
 
 MIDDLEWARE = [
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -52,11 +49,6 @@ MIDDLEWARE = [
     "accounts.middlewares.AdminRequiredMiddleware",
 ]
 
-INTERNAL_IPS = [
-    # ...
-    "127.0.0.1",
-    # ...
-]
 
 ROOT_URLCONF = "project.urls"
 AUTH_USER_MODEL = "accounts.CustomUser"
@@ -226,47 +218,47 @@ JAZZMIN_SETTINGS = {
 }
 
 
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "verbose": {
-            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
-            "style": "{",
-        },
-        "simple": {
-            "format": "{levelname} {message}",
-            "style": "{",
-        },
-    },
-    "handlers": {
-        "file": {
-            "level": "INFO",
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": os.path.join(BASE_DIR, "logs/django.log"),
-            "maxBytes": 1024 * 1024 * 15,  # 15MB
-            "backupCount": 10,
-            "formatter": "verbose",
-        },
-        "console": {
-            "level": "INFO",
-            "class": "logging.StreamHandler",
-            "formatter": "simple",
-        },
-    },
-    "loggers": {
-        "django": {
-            "handlers": ["file", "console"],
-            "level": "INFO",
-            "propagate": True,
-        },
-        "accounts": {
-            "handlers": ["file", "console"],
-            "level": "DEBUG",
-            "propagate": False,
-        },
-    },
-}
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "formatters": {
+#         "verbose": {
+#             "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+#             "style": "{",
+#         },
+#         "simple": {
+#             "format": "{levelname} {message}",
+#             "style": "{",
+#         },
+#     },
+#     "handlers": {
+#         "file": {
+#             "level": "INFO",
+#             "class": "logging.handlers.RotatingFileHandler",
+#             "filename": os.path.join(BASE_DIR, "logs/django.log"),
+#             "maxBytes": 1024 * 1024 * 15,  # 15MB
+#             "backupCount": 10,
+#             "formatter": "verbose",
+#         },
+#         "console": {
+#             "level": "INFO",
+#             "class": "logging.StreamHandler",
+#             "formatter": "simple",
+#         },
+#     },
+#     "loggers": {
+#         "django": {
+#             "handlers": ["file", "console"],
+#             "level": "INFO",
+#             "propagate": True,
+#         },
+#         "accounts": {
+#             "handlers": ["file", "console"],
+#             "level": "DEBUG",
+#             "propagate": False,
+#         },
+#     },
+# }
 
 
 # mailhog email for testing
@@ -286,3 +278,5 @@ EMAIL_USE_TLS = True  # use if your email provider doesn't support SSL and suppo
 
 # EMAIL_USE_SSL = False # keep True if your email provider doesn't support TLS and supports SSL
 # Note: TLS and SSL are mutually exclusive and they are used for security purposes (e.g. encryption, for privacy)
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
