@@ -35,12 +35,9 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "accounts",
     "store",
-    "debug_toolbar",
-    "background_task",
 ]
 
 MIDDLEWARE = [
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
